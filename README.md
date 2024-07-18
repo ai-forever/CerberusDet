@@ -10,7 +10,7 @@
 
 ### CerberusDet: Unified Multi-Task Object Detection
 
-[//]: # ([[`Paper`]&#40;https://arxiv.org/abs/&#41;])
+[[`Paper`](http://arxiv.org/abs/2407.12632)]
 
 ---
 
@@ -145,18 +145,18 @@ See the file [LICENSE](LICENSE.txt) for more details.
 
 If you use our models, code or dataset, we kindly request you to cite our paper and give repository a ⭐
 
-[//]: # (```bibtex)
+```bibtex
 
-[//]: # (@article{cerberusdet,)
+@article{cerberusdet,
 
-[//]: # (   Author = {Irina Tolstykh,Michael Chernyshov,Maksim Kuprashevich},)
+   Author = {Irina Tolstykh,Michael Chernyshov,Maksim Kuprashevich},
 
-[//]: # (   Title = {CerberusDet: Unified Multi-Task Object Detection},)
+   Title = {CerberusDet: Unified Multi-Task Object Detection},
 
-[//]: # (   Year = {2024},)
+   Year = {2024},
 
-[//]: # (   Eprint = {arXiv:},)
+   Eprint = {arXiv:2407.12632},
 
-[//]: # (})
+}
 
-[//]: # (```)
+```
