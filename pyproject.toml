@@ -59,6 +59,7 @@ dependencies = [
     "loguru>=0.6",
     "scikit-learn",
     "albumentations==1.4.0", # training augmentations
+    "mlflow>=1.28.0",
 ]
 
 # Optional dependencies ------------------------------------------------------------------------------------------------
@@ -69,7 +70,6 @@ dev = [
 logging = [
     "tensorboard>=2.13.0",
     "dvclive>=2.12.0",
-    "mlflow>=1.28.0",
     "boto3>=1.21.21",
 ]
 extra = [
