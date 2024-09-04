@@ -58,21 +58,25 @@ dependencies = [
     "seaborn>=0.11.0", # plotting
     "loguru>=0.6",
     "scikit-learn",
-    "tensorboard>=2.13.0",
-    "dvclive>=2.12.0",
-    "mlflow>=1.28.0",
-    "boto3>=1.21.21",
-    "ipython", # interactive notebook
     "albumentations==1.4.0", # training augmentations
-    "pycocotools>=2.0.7", # COCO mAP
-    "ray[tune]",
-    "optuna",
 ]
 
 # Optional dependencies ------------------------------------------------------------------------------------------------
 [project.optional-dependencies]
 dev = [
     "pre-commit",
+]
+logging = [
+    "tensorboard>=2.13.0",
+    "dvclive>=2.12.0",
+    "mlflow>=1.28.0",
+    "boto3>=1.21.21",
+]
+extra = [
+    "ipython", # interactive notebook
+    "pycocotools>=2.0.7", # COCO mAP
+    "ray[tune]",
+    "optuna",
 ]
 
 # Tools settings -------------------------------------------------------------------------------------------------------

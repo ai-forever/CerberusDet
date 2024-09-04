@@ -266,6 +266,7 @@ def run(
         seen = 0
         confusion_matrix = ConfusionMatrix(nc=nc)
         names = model.names if hasattr(model, "names") else model.module.names
+
         if isinstance(names, list):
             names = {task_id: names}
         names = {k: v for k, v in enumerate(names[task_id])}

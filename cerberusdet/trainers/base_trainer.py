@@ -46,7 +46,7 @@ class BaseTrainer:
         self.stopper = EarlyStopping(patience=self.opt.patience)
 
     def set_loss(self, model):
-        self.compute_loss = Loss(de_parallel(model), self.task_ids, self.opt.use_soft_labels)
+        self.compute_loss = Loss(de_parallel(model), self.task_ids)
 
     def train_epoch(self, model, ema, epoch, local_rank, world_size):
         """Trains `self.model` for one epoch over test `self.test_loaders`"""

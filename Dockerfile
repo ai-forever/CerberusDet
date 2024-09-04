@@ -16,6 +16,8 @@ WORKDIR /usr/src/app
 # Copy contents
 COPY . /usr/src/app
 RUN pip install -e .
+RUN pip install -e .[logging]
+RUN pip install -e .[extra]
 
 RUN pip install --no-cache coremltools onnx gsutil notebook
 RUN pip install --no-cache opencv-python==4.8.0.74 Pillow==9.5.0

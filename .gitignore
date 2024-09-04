@@ -1,4 +1,5 @@
 # Repo-specific GitIgnore
+**.yaml
 *.jpg
 *.jpeg
 *.png

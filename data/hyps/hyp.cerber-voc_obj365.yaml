@@ -1,5 +1,5 @@
 
-# task-dependent parameters in order: clothes, accessorise (order as in data.yaml)
+# task-dependent parameters in order: voc, objects365_animals (order as in data.yaml)
 lr0: 0.00309  # initial learning rate (SGD=1E-2, Adam=1E-3)
 lrf: 0.0956  # final OneCycleLR learning rate (lr0 * lrf)
 momentum: 0.952  # SGD momentum/Adam beta1

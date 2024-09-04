@@ -13,6 +13,8 @@ from cerberusdet.utils.torch_utils import de_parallel, get_hyperparameter
 from loguru import logger
 from torch.cuda import amp
 from tqdm import tqdm
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 LOGGER = logging.getLogger(__name__)
 LOCAL_RANK = int(os.getenv("LOCAL_RANK", -1))

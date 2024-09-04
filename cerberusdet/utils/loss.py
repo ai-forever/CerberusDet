@@ -46,7 +46,7 @@ class BboxLoss(nn.Module):
 
 # Criterion class for computing training losses
 class Loss:
-    def __init__(self, model, task_ids, use_soft_labels):  # model must be de-paralleled
+    def __init__(self, model, task_ids):  # model must be de-paralleled
 
         device = next(model.parameters()).device  # get model device
         h = model.hyp  # hyperparameters
@@ -87,11 +87,7 @@ class Loss:
                     topk=10,
                     num_classes=head.nc,
                     alpha=0.5,
-                    beta=6.0,
-                    use_soft_labels=use_soft_labels,
-                    label_smoothing=get_hyperparameter(
-                        h, "label_smoothing", task_ind=task_ids.index(task_name), task_name=task
-                    ),
+                    beta=6.0
                 )
 
         else:
@@ -106,8 +102,6 @@ class Loss:
                 num_classes=m.nc,
                 alpha=0.5,
                 beta=6.0,
-                use_soft_labels=use_soft_labels,
-                label_smoothing=get_hyperparameter(h, "label_smoothing"),
             )
 
         self.use_dfl = self.reg_max > 1
@@ -163,15 +157,9 @@ class Loss:
         # pboxes
         pred_bboxes = self.bbox_decode(anchor_points, pred_distri)  # xyxy, (b, h*w, 4)
 
-        target_bboxes, target_scores, fg_mask, _ = self.assigner[task](
-            pd_scores=pred_scores.detach().sigmoid(),
-            pd_bboxes=(pred_bboxes.detach() * stride_tensor).type(gt_bboxes.dtype),
-            anc_points=anchor_points * stride_tensor,
-            gt_labels=gt_labels,
-            gt_probs=gt_probs,
-            gt_bboxes=gt_bboxes,
-            mask_gt=mask_gt,
-        )
+        _, target_bboxes, target_scores, fg_mask, _ = self.assigner[task](
+            pred_scores.detach().sigmoid(), (pred_bboxes.detach() * stride_tensor).type(gt_bboxes.dtype),
+            anchor_points * stride_tensor, gt_labels, gt_bboxes, mask_gt)
 
         target_scores_sum = max(target_scores.sum(), 1)
 
@@ -182,9 +170,8 @@ class Loss:
         # bbox loss
         if fg_mask.sum():
             target_bboxes /= stride_tensor
-            loss[0], loss[2] = self.bbox_loss(
-                pred_distri, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask
-            )
+            loss[0], loss[2] = self.bbox_loss(pred_distri, pred_bboxes, anchor_points, target_bboxes, target_scores,
+                                              target_scores_sum, fg_mask)
 
         loss[0] *= self.loss_weights[task]["box"]  # box gain
         loss[1] *= self.loss_weights[task]["cls"]  # cls gain

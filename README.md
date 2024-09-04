@@ -30,7 +30,7 @@ $ pip install -e .
 
 ### Docker
 
-Change local paths to data in [docker-compose.yml](docker-compose.yml) file (`volumes`) and run the docker:
+Run the docker:
 
 ```bash
 sudo docker-compose up -d
@@ -47,9 +47,6 @@ For information about the VOC dataset and its creators, visit the [PASCAL VOC da
 'Lion', 'Donkey', 'Camel', 'Jellyfish', 'Other Fish', 'Dolphin', 'Crab', 'Seal', 'Goldfish']
 ```
 The Objects365 dataset is available for the academic purpose only. For information about the dataset and its creators, visit the [Objects365 dataset website](https://www.objects365.org/).
-
-**IMPORTANT:** If some patch tar.gz archives are still present in the `Objects365_part/tmp_images` directory, it means they were not fully downloaded. Please restart the script for missed patches to obtain all subset images.
-
 
 ### Train
 

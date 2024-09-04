@@ -3,7 +3,7 @@ from cerberusdet.utils.general import colorstr
 
 
 def create_data_loaders(
-    data_dict, rank, world_size, opt, hyp, gs, imgsz, val_rect=True, val_pad=0.5, skip_train_load=False
+    data_dict, rank, world_size, opt, hyp, gs, imgsz, val_rect=True, val_pad=0.5, skip_train_load=False, balanced_sampler=True,
 ):
     workers, noval, batch_size, single_cls = opt.workers, opt.noval, opt.batch_size, opt.single_cls
 
@@ -22,7 +22,7 @@ def create_data_loaders(
             train_loader, dataset = create_dataloader(
                 train_data_path,
                 imgsz,
-                batch_size // world_size,
+                batch_size,
                 gs,
                 single_cls,
                 hyp=hyp,
@@ -32,7 +32,7 @@ def create_data_loaders(
                 workers=workers,
                 prefix=colorstr("train: "),
                 task_ind=task_ind,
-                balanced_sampler=True,
+                balanced_sampler=balanced_sampler,
                 task_names=task_ids,
                 classnames=data_dict["names"][task_ind],
                 labels_from_xml=opt.labels_from_xml,
@@ -45,7 +45,7 @@ def create_data_loaders(
             val_loader, val_dataset = create_dataloader(
                 val_data_path,
                 imgsz,
-                min(batch_size // world_size * 2, batch_size),
+                batch_size,
                 gs,
                 single_cls,
                 hyp=hyp,

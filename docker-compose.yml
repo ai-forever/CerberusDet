@@ -6,9 +6,6 @@ services:
   cerber:
     shm_size: 100G
     build: .
-    volumes:
-      - "/data:/data"
-      - "/CerberusDet:/usr/src/app"
     stdin_open: true
     tty: true
     entrypoint: /bin/bash

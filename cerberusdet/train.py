@@ -92,7 +92,7 @@ def train(
     # dataset: train dataset
     if train_dataset is None:
         train_loader, val_loader, dataset, _ = create_data_loaders(
-            model_manager.data_dict, RANK, WORLD_SIZE, opt, hyp, gs, imgsz
+            model_manager.data_dict, RANK, WORLD_SIZE, opt, hyp, gs, imgsz, balanced_sampler=True
         )
     else:
         # update dataset hyperparams
@@ -114,7 +114,7 @@ def train(
             val_task_dataloader = _create_dataloader(
                 val_task_dataset,
                 workers=opt.workers,
-                batch_size=min(opt.batch_size // WORLD_SIZE * 2, opt.batch_size),
+                batch_size=opt.batch_size,
                 rank=-1,
                 use_balanced_sampler=False,
             )
@@ -238,7 +238,7 @@ def train(
                 for m in ckpts:  # speed, mAP tests
                     results_per_task[task] = val.run(
                         model_manager.data_dict,
-                        batch_size=trainer.batch_size // WORLD_SIZE * 2,
+                        batch_size=trainer.batch_size,
                         imgsz=imgsz,
                         model=attempt_load(m, device).half(),
                         single_cls=model_manager.opt.single_cls,
@@ -283,7 +283,7 @@ def parse_opt(known=False):
     parser.add_argument("--data", type=str, default="data/voc_obj365.yaml", help="dataset.yaml path")
     parser.add_argument("--hyp", type=str, default="data/hyps/hyp.cerber-voc_obj365.yaml", help="hyperparameters path")
     parser.add_argument("--epochs", type=int, default=100)
-    parser.add_argument("--batch-size", type=int, default=32, help="total batch size for all GPUs")
+    parser.add_argument("--batch-size", type=int, default=32, help="batch size for one GPU")
     parser.add_argument("--imgsz", "--img", "--img-size", type=int, default=640, help="train, val image size (pixels)")
     parser.add_argument("--resume", nargs="?", const=True, default=False, help="resume most recent training")
     parser.add_argument("--nosave", action="store_true", help="only save final checkpoint")
@@ -348,11 +348,9 @@ def main(opt):
         )  # specified or most recent path
         logger.info(f"Resume from {ckpt}")
         assert os.path.isfile(ckpt), "ERROR: --resume checkpoint does not exist"
-        batch_size = opt.batch_size
         with open(Path(ckpt).parent.parent / "opt.yaml") as f:
             opt = argparse.Namespace(**yaml.safe_load(f))  # replace
         opt.cfg, opt.weights, opt.resume = "", ckpt, True  # reinstate
-        opt.batch_size = batch_size
 
         LOGGER.info(f"Resuming training from {ckpt}")
     else:
@@ -363,10 +361,12 @@ def main(opt):
                 opt.project = str(ROOT / "runs/evolve")
             opt.name = f"{opt.evolver}_{opt.name}"
         opt.exist_ok, opt.resume = opt.resume, False  # pass resume to exist_ok and disable resume
-        opt.save_dir = str(increment_path(Path(opt.project) / opt.name, exist_ok=opt.exist_ok, mkdir=True))
+        if RANK in [-1, 0]:
+            opt.save_dir = str(increment_path(Path(opt.project) / opt.name, exist_ok=opt.exist_ok, mkdir=True))
+        else:
+            opt.save_dir = ""
 
     # DDP mode
-    device = select_device(opt.device, batch_size=opt.batch_size)
     if LOCAL_RANK != -1:
         from datetime import timedelta
 
@@ -376,7 +376,8 @@ def main(opt):
         dist.init_process_group(
             backend="nccl" if dist.is_nccl_available() else "gloo", timeout=timedelta(seconds=10000)
         )
-        assert opt.batch_size % WORLD_SIZE == 0, "--batch-size must be multiple of CUDA device count"
+    else:
+        device = select_device(opt.device, batch_size=opt.batch_size)
 
     # Train
     if not opt.evolve:
