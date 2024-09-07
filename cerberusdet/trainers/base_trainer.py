@@ -134,7 +134,7 @@ class BaseTrainer:
             # mAP
             results, maps, _ = val.run(
                 self.model_manager.data_dict,
-                batch_size=self.batch_size // world_size * 2,
+                batch_size=max(self.batch_size) if isinstance(self.batch_size, list) else self.batch_size,
                 imgsz=self.imgsz,
                 model=ema.ema,
                 single_cls=self.opt.single_cls,

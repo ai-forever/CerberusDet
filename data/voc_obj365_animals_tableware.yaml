@@ -1,0 +1,26 @@
+train: [
+  "/data/VOC/images/train_all",
+  "/data/Objects365_part/images/animals/train",
+  "/data/Objects365_part/images/tableware/train",
+]
+
+val: [
+  "/data/VOC/images/test2007",
+  "/data/Objects365_part/images/animals/val",
+  "/data/Objects365_part/images/tableware/val",
+]
+test:  #
+
+# Classes
+nc: [20, 19, 12]  # number of classes
+
+names: [ # class names
+  [ 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow', 'diningtable', 'dog',
+    'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor' ],
+  [ 'Monkey', 'Rabbit', 'Yak', 'Antelope', 'Pig',  'Bear', 'Deer', 'Giraffe', 'Zebra', 'Elephant',
+    'Lion', 'Donkey', 'Camel', 'Jellyfish', 'Other Fish', 'Dolphin', 'Crab', 'Seal', 'Goldfish' ],
+  [ 'Cup', 'Plate', 'Wine Glass', 'Pot', 'Knife', 'Fork', 'Spoon', 'Chopsticks',
+    'Cutting/chopping Board', 'Tea pot', 'Kettle', 'Tong' ]
+]
+
+task_ids: ['voc', 'objects365_animals', 'objects365_tableware']

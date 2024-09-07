@@ -41,11 +41,18 @@ sudo docker attach cerberusdet_cerber_1
 - Use script [voc.py](data/scripts/voc.py) to download VOC dataset
 
 For information about the VOC dataset and its creators, visit the [PASCAL VOC dataset website](http://host.robots.ox.ac.uk/pascal/VOC/).
-- Use script [objects365_animals.py](data/scripts/objects365_animals.py) to download part of Objects365 dataset with 19 categories, used in the paper.
+- Use script [objects365_part.py](data/scripts/objects365_part.py) to download subset of Objects365 dataset with 19 animals categories:
 ```
 ['Monkey', 'Rabbit', 'Yak', 'Antelope', 'Pig',  'Bear', 'Deer', 'Giraffe', 'Zebra', 'Elephant',
 'Lion', 'Donkey', 'Camel', 'Jellyfish', 'Other Fish', 'Dolphin', 'Crab', 'Seal', 'Goldfish']
 ```
+Along with Objects365 subset with 12 tableware categories:
+```
+  [ 'Cup', 'Plate', 'Wine Glass', 'Pot', 'Knife', 'Fork', 'Spoon', 'Chopsticks',
+    'Cutting/chopping Board', 'Tea pot', 'Kettle', 'Tong']
+```
+To download full Objects365 dataset, set `DOWNLOAD_SUBSETS = False` in the script [objects365_part.py](data/scripts/objects365_part.py).
+
 The Objects365 dataset is available for the academic purpose only. For information about the dataset and its creators, visit the [Objects365 dataset website](https://www.objects365.org/).
 
 ### Train
@@ -110,13 +117,17 @@ Example of the model's config for 2 tasks: [yolov8x_voc_obj365.yaml](cerberusdet
 ### Pretrained Checkpoints
 
 
-| Model               | Train set               | size<br><sup>(pixels) | mAP<sup>val<br>50-95 | mAP<sup>val<br>50 | Speed<br><sup>V100 b32, fp16<br>(ms) | params<br><sup>(M) | FLOPs<br><sup>@640 (B) |
-|---------------------|-------------------------|-----------------------|----------------------|-------------------|--------------------------------------|--------------------|------------------------|
-| [YOLOv8x](https://drive.google.com/file/d/11WZJxFd_7jww1TyXTogoVh7OzlrTDMQ0/view?usp=sharing)         | VOC                     | 640                   | 0.758                | 0.916             | 5.6                                  | 68                 | 257.5                  |
-| [YOLOv8x](https://drive.google.com/file/d/1wBJFfsgfMTuBaRaIEecJN2YgWju_IKju/view?usp=sharing)         | Objects365_animals      | 640                   | 0.43                 | 0.548             | 5.6                                  | 68                 | 257.5                  |
-| [CerberusDet_v8x](https://drive.google.com/file/d/1SXkbf0hHacpSgJWngkvPLwHQ_s3vQQZ-/view?usp=sharing) | VOC, Objects365_animals | 640                   | 0.751, 0.432         | 0.918, 0.556      | 7.2                                  | 105                | 381.3                  |
+| Model                                                                                                                                                                                   | Train set                                     | size<br><sup>(pixels) | mAP<sup>val<br>50-95 | mAP<sup>val<br>50  | Speed<br><sup>V100 b32, fp16<br>(ms) | params<br><sup>(M) | FLOPs<br><sup>@640 (B) |
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------|-----------------------|----------------------|--------------------|------------------------------------|--------------------|------------------------|
+| [YOLOv8x](https://drive.google.com/file/d/11WZJxFd_7jww1TyXTogoVh7OzlrTDMQ0/view?usp=sharing)                                                                                           | VOC                                           | 640                   | 0.758                | 0.916              | 5.6                                | 68                 | 257.5                  |
+| [YOLOv8x](https://drive.google.com/file/d/1wBJFfsgfMTuBaRaIEecJN2YgWju_IKju/view?usp=sharing)                                                                                           | Objects365_animals                            | 640                   | 0.43                 | 0.548              | 5.6                                | 68                 | 257.5                  |
+| [YOLOv8x](https://drive.google.com/file/d/1VNIwogJGYLEDJXJ2R-k-aucSZOWjfSXW/view?usp=sharing)                                                                                           | Objects365_tableware                          | 640                   | 0.56                 | 0.68               | 5.6                                | 68                 | 257.5                  |
+| [YOLOv8x](https://drive.google.com/file/d/1phP54z9dIOnCxG2XfB3c1Rf3RssiifSp/view?usp=sharing)                                                                                           | Objects365_full                               | 640                   | 0.291                | 0.381              | 5.6                                | 70                 | 267.0                  |
+| [CerberusDet_v8x](https://drive.google.com/file/d/1vHqLGot6AMcWOO5GWN1YOUNbvzNai0Oj/view?usp=sharing) | VOC, Objects365_animals                       | 640                   | 0.751, 0.432         | 0.918, 0.556       | 7.2                                | 105                | 381.3                  |
+| [CerberusDet_v8x](https://drive.google.com/file/d/1SwgZw0FgilAG2qaf66j-cgYRVg4fhyag/view?usp=sharing)                                                                                   | VOC, Objects365_animals, Objects365_tableware | 640                   | 0.762, 0.421, 0.56   | 0.927, 0.541, 0.68 | 10                                 | 142                | 505.1                  |
+| [CerberusDet_v8x](https://drive.google.com/file/d/19sOpjFp-qgEtywfJeufX9zH6oidFlVeg/view?usp=sharing)                                                                                   | VOC, Objects365_full                          | 640                   | 0.767, 0.345         | 0.932, 0.453       | 7.2                                | 107                | 390.8                  |
 
-YOLOv8x models were trained with the the commit: https://github.com/ultralytics/ultralytics/tree/2bc36d97ce7f0bdc0018a783ba56d3de7f0c0518
+YOLOv8x models were trained with the commit: https://github.com/ultralytics/ultralytics/tree/2bc36d97ce7f0bdc0018a783ba56d3de7f0c0518
 
 
 ### Hyperparameter Evolution

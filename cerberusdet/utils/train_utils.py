@@ -22,7 +22,7 @@ def create_data_loaders(
             train_loader, dataset = create_dataloader(
                 train_data_path,
                 imgsz,
-                batch_size,
+                opt.batch_size[task_ind] if isinstance(opt.batch_size, list) else opt.batch_size,
                 gs,
                 single_cls,
                 hyp=hyp,
@@ -45,7 +45,7 @@ def create_data_loaders(
             val_loader, val_dataset = create_dataloader(
                 val_data_path,
                 imgsz,
-                batch_size,
+                max(opt.batch_size) if isinstance(opt.batch_size, list) else opt.batch_size,
                 gs,
                 single_cls,
                 hyp=hyp,

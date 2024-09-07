@@ -1,6 +1,7 @@
 import logging
 import os
 import random
+from typing import Union, List
 
 import torch
 import torch.nn as nn
@@ -37,13 +38,20 @@ class Averaging(BaseTrainer):
         )
 
         self.cuda = device.type != "cpu"
-        self.batch_size = self.opt.batch_size
+        self.batch_size: Union[int, List[int]] = self.opt.batch_size
+        self.use_batch_skipping = self.opt.skip_batches
 
         self.nbs = 64  # nominal batch size
         datasets_len = [len(train_loader) for train_loader in self.train_loaders]
         if LOCAL_RANK in [-1, 0]:
             logger.info(f"datasets sizes: {datasets_len} ")
         self.nb = max(datasets_len)
+
+        if self.use_batch_skipping:
+            max_size = max(datasets_len)
+            self.iters_per_task = [max_size // datasets_len[i] for i in range(len(datasets_len))]
+            if LOCAL_RANK in [-1, 0]:
+                logger.info(f"viewing tasks iteration frequency: {self.iters_per_task}")
 
         # number of warmup iterations, max(3 epochs, 1k iterations)
         self.nw = max(round(get_hyperparameter(self.hyp, "warmup_epochs") * self.nb), 1000)
@@ -122,7 +130,6 @@ class Averaging(BaseTrainer):
         self.optimizer.zero_grad()
         log_step = self.nb // 10 if self.opt.evolve else 1
         for i, batch_idx in pbar:
-
             # Warmup
             ni = i + self.nb * epoch  # number integrated batches (since train start)
             if ni <= self.nw:
@@ -130,8 +137,13 @@ class Averaging(BaseTrainer):
 
             printed_task_i = random.randint(0, len(self.task_ids) - 1)
 
+            skipped_tasks = []
             # for each task, calculate head grads and accumulate body grads
             for task_i, task_id in enumerate(self.task_ids):
+
+                if self.use_batch_skipping and i % self.iters_per_task[task_i] != 0:
+                    skipped_tasks.append(task_id)
+                    continue
 
                 try:
                     batch = next(loader_iterators[task_i])
@@ -168,6 +180,17 @@ class Averaging(BaseTrainer):
                     if plots:
                         self.model_manager.plot_train_images(i, task_id, batch, de_parallel(model))
 
+            if self.use_batch_skipping:
+                # update num branches for each block
+                num_branches = dict()
+                for idx, (ctrl, block) in enumerate(de_parallel(model).control_blocks()):
+                    serving_tasks = list(ctrl.serving_tasks.keys())
+                    for t in skipped_tasks:
+                        if t in serving_tasks:
+                            serving_tasks.remove(t)
+                    n_branches = max(len(serving_tasks), 1.0)
+                    num_branches[idx] = torch.tensor(n_branches, device=self.device)
+
             self.optimizer_step(model, ema, num_branches)
 
         # Scheduler
@@ -188,6 +211,8 @@ class Averaging(BaseTrainer):
         for idx, (_, block) in enumerate(de_parallel(model).control_blocks()):
             for p_name, p in block.named_parameters():
                 if not p.requires_grad:
+                    continue
+                if p.grad is None:
                     continue
                 p.grad /= num_branches[idx]
 

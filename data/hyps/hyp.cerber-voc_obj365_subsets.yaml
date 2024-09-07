@@ -1,0 +1,36 @@
+
+# task-dependent parameters in order: voc, objects365_animals, objects365_tableware (order as in data.yaml)
+lr0: 0.00309  # initial learning rate (SGD=1E-2, Adam=1E-3)
+lrf: 0.0956  # final OneCycleLR learning rate (lr0 * lrf)
+momentum: 0.952  # SGD momentum/Adam beta1
+weight_decay:  0.00037  # optimizer weight decay 5e-4
+warmup_epochs:  2.04  # warmup epochs (fractions ok)
+warmup_momentum:  0.898  # warmup initial momentum
+warmup_bias_lr:  0.0502  # warmup initial bias lr
+
+box:
+  - 7.5  # box loss gain
+  - 7.5
+  - 7.5
+cls:
+  - 0.5  # cls loss gain (scale with pixels)
+  - 0.5
+  - 0.5
+dfl:
+  - 1.5  # dfl loss gain
+  - 1.5
+  - 1.5
+hsv_h: 0.0124
+hsv_s: 0.696
+hsv_v: 0.287
+degrees: 0.299
+translate: 0.211
+scale: 0.846
+scaleup: 0.0
+shear: 0.717
+perspective: 0.0  # image perspective (+/- fraction), range 0-0.001
+flipud: 0.00983
+fliplr: 0.5  # image flip left-right (probability)
+mosaic: 1.0
+mixup: 0.285
+label_smoothing: 0.0

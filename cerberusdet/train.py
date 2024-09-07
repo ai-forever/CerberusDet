@@ -98,12 +98,12 @@ def train(
         # update dataset hyperparams
         train_loader = []
         dataset = train_dataset
-        for train_task_dataset in dataset:
+        for ii, train_task_dataset in enumerate(dataset):
             train_task_dataset.update_hyp(hyp)
             train_task_dataloader = _create_dataloader(
                 train_task_dataset,
                 workers=opt.workers,
-                batch_size=opt.batch_size,
+                batch_size=opt.batch_size[ii] if isinstance(opt.batch_size, list) else opt.batch_size,
                 rank=RANK,
                 use_balanced_sampler=True,
             )
@@ -114,7 +114,7 @@ def train(
             val_task_dataloader = _create_dataloader(
                 val_task_dataset,
                 workers=opt.workers,
-                batch_size=opt.batch_size,
+                batch_size=max(opt.batch_size) if isinstance(opt.batch_size, list) else opt.batch_size,
                 rank=-1,
                 use_balanced_sampler=False,
             )
@@ -238,7 +238,7 @@ def train(
                 for m in ckpts:  # speed, mAP tests
                     results_per_task[task] = val.run(
                         model_manager.data_dict,
-                        batch_size=trainer.batch_size,
+                        batch_size=max(trainer.batch_size) if isinstance(trainer.batch_size, list) else trainer.batch_size,
                         imgsz=imgsz,
                         model=attempt_load(m, device).half(),
                         single_cls=model_manager.opt.single_cls,
@@ -283,7 +283,7 @@ def parse_opt(known=False):
     parser.add_argument("--data", type=str, default="data/voc_obj365.yaml", help="dataset.yaml path")
     parser.add_argument("--hyp", type=str, default="data/hyps/hyp.cerber-voc_obj365.yaml", help="hyperparameters path")
     parser.add_argument("--epochs", type=int, default=100)
-    parser.add_argument("--batch-size", type=int, default=32, help="batch size for one GPU")
+    parser.add_argument("--batch-size", type=str, default='32', help="batch size for one GPUs")
     parser.add_argument("--imgsz", "--img", "--img-size", type=int, default=640, help="train, val image size (pixels)")
     parser.add_argument("--resume", nargs="?", const=True, default=False, help="resume most recent training")
     parser.add_argument("--nosave", action="store_true", help="only save final checkpoint")
@@ -330,6 +330,8 @@ def parse_opt(known=False):
         default=0,
         help="Freeze shared between all tasks params for first N epochs",
     )
+    parser.add_argument("--skip-batches", action="store_true",
+                        help="skip batches of small datasets so that the model sees them only once per epoch.")
     opt = parser.parse_known_args()[0] if known else parser.parse_args()
     return opt
 
@@ -339,7 +341,6 @@ def main(opt):
     if RANK in [-1, 0]:
         print(colorstr("train: ") + ", ".join(f"{k}={v}" for k, v in vars(opt).items()))
         check_git_status()
-        check_requirements(exclude=["thop"])
 
     # Resume
     if opt.resume and not opt.evolve:  # resume an interrupted run
@@ -366,6 +367,11 @@ def main(opt):
         else:
             opt.save_dir = ""
 
+    if isinstance(opt.batch_size, str):
+        opt.batch_size = list(map(int, opt.batch_size.split(",")))
+        if len(opt.batch_size) == 1:
+            opt.batch_size = opt.batch_size[0]
+
     # DDP mode
     if LOCAL_RANK != -1:
         from datetime import timedelta
@@ -377,7 +383,9 @@ def main(opt):
             backend="nccl" if dist.is_nccl_available() else "gloo", timeout=timedelta(seconds=10000)
         )
     else:
-        device = select_device(opt.device, batch_size=opt.batch_size)
+        device = select_device(
+            opt.device, batch_size=max(opt.batch_size) if isinstance(opt.batch_size, list) else opt.batch_size
+        )
 
     # Train
     if not opt.evolve:

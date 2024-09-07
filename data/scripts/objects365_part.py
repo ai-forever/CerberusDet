@@ -9,6 +9,9 @@ from pycocotools.coco import COCO
 from tqdm import tqdm
 
 
+DOWNLOAD_SUBSETS = True  # False to download full Objects365 dataset
+
+
 def download_archive(urls, dir):
     for url in urls:
         archive_name = os.path.basename(url)
@@ -21,17 +24,26 @@ def download_archive(urls, dir):
 
 
 if __name__ == '__main__':
-    yaml = {"path": "/data/Objects365_part"}
+    yaml = {"path": "/data/Objects365_part" if DOWNLOAD_SUBSETS else "/data/Objects365_full"}
 
     # ['Monkey', 'Rabbit', 'Yak', 'Antelope', 'Pig',  'Bear', 'Deer', 'Giraffe', 'Zebra', 'Elephant',
     # 'Lion', 'Donkey', 'Camel', 'Jellyfish', 'Other Fish', 'Dolphin', 'Crab', 'Seal', 'Goldfish']
     animals_categories_ids = [341, 342, 344, 318, 300, 295, 240, 180, 178, 144, 324, 323, 307, 330, 103, 326, 311, 320,
                               273]
 
-    subsets = {
-        "animals": animals_categories_ids,
-        # "all": None,
-    }
+    # ['Cup', 'Plate', 'Wine Glass', 'Pot', 'Knife', 'Fork', 'Spoon', 'Chopsticks', 'Cutting/chopping Board', 'Tea pot',
+    # 'Kettle', 'Tong']
+    tableware = [10, 15, 35, 95, 84, 88, 93, 162, 166, 122, 209, 203]
+
+    if DOWNLOAD_SUBSETS:
+        subsets = {
+            "animals": animals_categories_ids,
+            "tableware": tableware,
+        }
+    else:
+        subsets = {
+            "all": None,
+        }
 
     out_images_dir_names = [f"images/{subset_name}" for subset_name in subsets.keys()]
     out_labels_dir_names = [f"labels/{subset_name}" for subset_name in subsets.keys()]

@@ -26,7 +26,7 @@ from cerberusdet.utils.plots import output_to_target, plot_images
 from cerberusdet.utils.torch_utils import Profile, model_info, select_device
 from tqdm import tqdm
 
-torch.backends.cudnn.enabled = False
+# torch.backends.cudnn.enabled = False
 
 
 def process_batch(detections, labels, iouv):
@@ -468,9 +468,11 @@ def parse_opt():
 
 
 def main(opt):
+    if not torch.backends.cudnn.enabled:
+        print("Warning: Use cudnn to speed up inference")
+
     set_logging()
     print(colorstr("val: ") + ", ".join(f"{k}={v}" for k, v in vars(opt).items()))
-    check_requirements(exclude=("tensorboard", "thop"))
 
     if opt.task in ("train", "val", "test"):  # run normally
         run(**vars(opt))
@@ -481,8 +483,6 @@ def main(opt):
             weights=opt.weights,
             batch_size=opt.batch_size,
             imgsz=opt.imgsz,
-            conf_thres=0.05,
-            iou_thres=0.6,
             plots=False,
             task="speed",
             use_multi_labels=opt.use_multi_labels,

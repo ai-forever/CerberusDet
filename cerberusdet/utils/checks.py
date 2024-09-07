@@ -67,7 +67,7 @@ def check_online():
         return False
 
 
-def check_git_status(err_msg=", for updates see https://github.com/ultralytics/yolov5"):
+def check_git_status(err_msg=", for updates see https://github.com/ai-forever/CerberusDet"):
     # Recommend 'git pull' if code is out of date
     print(colorstr("github: "), end="")
     try:
