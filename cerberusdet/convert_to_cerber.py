@@ -89,7 +89,7 @@ def convert(ckpt: str, cfg: str, out_path: str, data_cfg_path: str, task_name: s
         ch=3,
         verbose=True,
     )
-    ckpt = torch.load(ckpt)
+    ckpt = torch.load(ckpt, map_location="cpu")
     state_dict, loaded = from_ckpt(ckpt, model, exclude=[])
     assert loaded
 

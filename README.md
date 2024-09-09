@@ -8,7 +8,7 @@
 <br>
 </div>
 
-### CerberusDet: Unified Multi-Task Object Detection
+### CerberusDet: Unified Multi-Dataset Object Detection
 
 [[`Paper`](http://arxiv.org/abs/2407.12632)]
 
@@ -68,11 +68,11 @@ $ python3 cerberusdet/train.py \
 --hyp data/hyps/hyp.cerber-voc_obj365.yaml \
 --name voc_obj365_v8x --device 0
 ```
-- OR run train process with several GPUs (batch size will be divided):
+- OR run train process with several GPUs:
 ```bash
 $ CUDA_VISIBLE_DEVICES="0,1,2,3" \
 python -m torch.distributed.launch --nproc_per_node 4 cerberusdet/train.py \
---img 640 --batch 128 \
+--img 640 --batch 32 \
 --data data/voc_obj365.yaml \
 --weights pretrained/yolov8x_state_dict.pt \
 --cfg cerberusdet/models/yolov8x_voc_obj365.yaml \
@@ -117,15 +117,15 @@ Example of the model's config for 2 tasks: [yolov8x_voc_obj365.yaml](cerberusdet
 ### Pretrained Checkpoints
 
 
-| Model                                                                                                                                                                                   | Train set                                     | size<br><sup>(pixels) | mAP<sup>val<br>50-95 | mAP<sup>val<br>50  | Speed<br><sup>V100 b32, fp16<br>(ms) | params<br><sup>(M) | FLOPs<br><sup>@640 (B) |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------|-----------------------|----------------------|--------------------|------------------------------------|--------------------|------------------------|
-| [YOLOv8x](https://drive.google.com/file/d/11WZJxFd_7jww1TyXTogoVh7OzlrTDMQ0/view?usp=sharing)                                                                                           | VOC                                           | 640                   | 0.758                | 0.916              | 5.6                                | 68                 | 257.5                  |
-| [YOLOv8x](https://drive.google.com/file/d/1wBJFfsgfMTuBaRaIEecJN2YgWju_IKju/view?usp=sharing)                                                                                           | Objects365_animals                            | 640                   | 0.43                 | 0.548              | 5.6                                | 68                 | 257.5                  |
-| [YOLOv8x](https://drive.google.com/file/d/1VNIwogJGYLEDJXJ2R-k-aucSZOWjfSXW/view?usp=sharing)                                                                                           | Objects365_tableware                          | 640                   | 0.56                 | 0.68               | 5.6                                | 68                 | 257.5                  |
-| [YOLOv8x](https://drive.google.com/file/d/1phP54z9dIOnCxG2XfB3c1Rf3RssiifSp/view?usp=sharing)                                                                                           | Objects365_full                               | 640                   | 0.291                | 0.381              | 5.6                                | 70                 | 267.0                  |
+| Model                                                                                                                                                                                  | Train set                                     | size<br><sup>(pixels) | mAP<sup>val<br>50-95 | mAP<sup>val<br>50  | Speed<br><sup>V100 b32, fp16<br>(ms) | params<br><sup>(M) | FLOPs<br><sup>@640 (B) |
+|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------|-----------------------|----------------------|--------------------|------------------------------------|--------------------|------------------------|
+| [YOLOv8x](https://drive.google.com/file/d/11WZJxFd_7jww1TyXTogoVh7OzlrTDMQ0/view?usp=sharing)                                                                                          | VOC                                           | 640                   | 0.758                | 0.916              | 5.6                                | 68                 | 257.5                  |
+| [YOLOv8x](https://drive.google.com/file/d/1wBJFfsgfMTuBaRaIEecJN2YgWju_IKju/view?usp=sharing)                                                                                          | Objects365_animals                            | 640                   | 0.43                 | 0.548              | 5.6                                | 68                 | 257.5                  |
+| [YOLOv8x](https://drive.google.com/file/d/1VNIwogJGYLEDJXJ2R-k-aucSZOWjfSXW/view?usp=sharing)                                                                                          | Objects365_tableware                          | 640                   | 0.56                 | 0.68               | 5.6                                | 68                 | 257.5                  |
+| [YOLOv8x](https://drive.google.com/file/d/1phP54z9dIOnCxG2XfB3c1Rf3RssiifSp/view?usp=sharing)                                                                                          | Objects365_full                               | 640                   | 0.291                | 0.381              | 5.6                                | 70                 | 267.0                  |
 | [CerberusDet_v8x](https://drive.google.com/file/d/1vHqLGot6AMcWOO5GWN1YOUNbvzNai0Oj/view?usp=sharing) | VOC, Objects365_animals                       | 640                   | 0.751, 0.432         | 0.918, 0.556       | 7.2                                | 105                | 381.3                  |
-| [CerberusDet_v8x](https://drive.google.com/file/d/1SwgZw0FgilAG2qaf66j-cgYRVg4fhyag/view?usp=sharing)                                                                                   | VOC, Objects365_animals, Objects365_tableware | 640                   | 0.762, 0.421, 0.56   | 0.927, 0.541, 0.68 | 10                                 | 142                | 505.1                  |
-| [CerberusDet_v8x](https://drive.google.com/file/d/19sOpjFp-qgEtywfJeufX9zH6oidFlVeg/view?usp=sharing)                                                                                   | VOC, Objects365_full                          | 640                   | 0.767, 0.345         | 0.932, 0.453       | 7.2                                | 107                | 390.8                  |
+| [CerberusDet_v8x](https://drive.google.com/file/d/1SwgZw0FgilAG2qaf66j-cgYRVg4fhyag/view?usp=sharing)                                                                                  | VOC, Objects365_animals, Objects365_tableware | 640                   | 0.762, 0.421, 0.56   | 0.927, 0.541, 0.68 | 10                                 | 142                | 505.1                  |
+| [CerberusDet_v8x](https://drive.google.com/file/d/1vL_xw-EWHy_XojdxR5WPBtsBLSNbycl4/view?usp=sharing)                                                                                   | VOC, Objects365_full                          | 640                   | 0.767, 0.355         | 0.932, 0.464       | 7.2                                | 107                | 390.8                  |
 
 YOLOv8x models were trained with the commit: https://github.com/ultralytics/ultralytics/tree/2bc36d97ce7f0bdc0018a783ba56d3de7f0c0518
 
@@ -159,7 +159,7 @@ If you use our models, code or dataset, we kindly request you to cite our paper 
 
    Author = {Irina Tolstykh,Michael Chernyshov,Maksim Kuprashevich},
 
-   Title = {CerberusDet: Unified Multi-Task Object Detection},
+   Title = {CerberusDet: Unified Multi-Dataset Object Detection},
 
    Year = {2024},
 
