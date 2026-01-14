@@ -59,8 +59,7 @@ dependencies = [
     "loguru>=0.6",
     "scikit-learn",
     "albumentations==1.4.0", # training augmentations
-    "mlflow>=1.28.0",
-    "transformers>=4.46.3",
+    "mlflow>=1.28.0"
 ]
 
 # Optional dependencies ------------------------------------------------------------------------------------------------
