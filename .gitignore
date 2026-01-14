@@ -21,6 +21,7 @@
 *.data
 *.json
 *.cfg
+**.DS_Store
 
 runs/*
 !data/hyps/*

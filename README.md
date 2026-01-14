@@ -1,7 +1,7 @@
 <div align="center">
 <p>
 <a align="left"  target="_blank">
-<img width="640" src="assets/logo.png"></a>
+<img width="640" src="assets/logo-2.png"></a>
 </p>
 <br>
 
@@ -111,8 +111,124 @@ Example of the model's config for 2 tasks: [yolov8x_voc_obj365.yaml](cerberusdet
 
 ### Inference
 
-- Download CerberusDet checkpoint trianed on VOC and part of Objects 365 datasets (see below)
-- Run script [bash_scripts/detect.sh](bash_scripts/detect.sh)
+You can run inference using either the provided bash script or directly via the Python API.
+
+#### 1. Using Bash Script
+First, download the CerberusDet checkpoint trained on VOC and parts of the Objects365 dataset (see the **Pretrained Checkpoints** section below).
+
+Then, run the detection script:
+```bash
+./bash_scripts/detect.sh
+```
+
+#### 2. Using Python API
+You can also integrate CerberusDet into your own code. Below is an example of how to initialize the model, preprocess images, and visualize the results.
+
+```python
+import cv2
+from cerberusdet.cerberusdet_inference import CerberusDetInference, CerberusVisualizer
+from cerberusdet.cerberusdet_preprocessor import CerberusPreprocessor
+
+# 1. Configuration
+weights_path = 'weights/voc_obj365_v8x_best.pt'
+img_path = 'data/images/bus.jpg'
+device = 'cuda:0'
+
+# 2. Initialize model, preprocessor, and visualizer
+inferencer = CerberusDetInference(
+    weights=weights_path,
+    device=device,
+    conf_thres=0.3,
+    iou_thres=0.45,
+    half=True
+)
+
+# Note: Pass the model's stride to the preprocessor
+preprocessor = CerberusPreprocessor(
+    img_size=640,
+    stride=inferencer.stride,
+    device=device,
+    half=inferencer.half,
+    auto=True
+)
+
+visualizer = CerberusVisualizer(line_thickness=2, text_scale=0.5)
+
+# 3. Load images
+# The preprocessor expects a list of numpy arrays (BGR)
+images = [cv2.imread(img_path)]
+original_shapes = [img.shape[:2] for img in images]
+
+# 4. Run inference
+img_tensor = preprocessor.preprocess(images)
+detections = inferencer.predict(img_tensor, original_shape=original_shapes)
+
+# Visualization
+res_image = visualizer.draw_detections(
+    images[0],
+    detections[0],
+    hide_task=False,  # Show task name (VOC, O365, etc.)
+    hide_conf=False   # Show confidence score
+)
+
+# 5. Output / Save results
+print(f"Found objects: {len(detections[0])}")
+for det in detections[0]:
+    print(f"{det['label_name']} ({det['score']:.2f}) - Task: {det['task']}")
+
+cv2.imshow("CerberusDet Result", res_image)
+cv2.imwrite("result.jpg", res_image)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+```
+
+> **NOTE:** To run inference using standard YOLOv8 checkpoints, use the `cerberusdet.yolo_wrapper.YOLOV8ForObjectDetection` class. Please ensure the following requirements are met:
+> ```bash
+> pip install ultralytics==8.1.0 torch==2.5.1
+> ```
+> *Tip: Class names for specific datasets can be found in the corresponding YAML configuration files located in the `data/` directory.*
+>
+> <details>
+> <summary><b>Example using the VOC_07_12_best_state_dict.pt checkpoint (Click to expand)</b></summary>
+>
+> ```python
+> import torch
+> from PIL import Image
+> from cerberusdet.yolo_wrapper import YOLOV8ForObjectDetection, YoloV8Config
+>
+> image_path = 'images/image1.png'
+> model_path = 'weights/VOC_07_12_best_state_dict.pt'
+>
+> # 1. Load model
+> torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+> device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+>
+> # Define class names (or load them from data/voc.yaml)
+> voc_class_names = ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car',
+>                    'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 'person',
+>                    'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
+>
+> model_config = YoloV8Config(
+>       num_classes=len(voc_class_names),
+>       names={str(i): voc_class_names[i] for i in range(len(voc_class_names))},
+> )
+>
+> model = YOLOV8ForObjectDetection(config=model_config).from_pretrained(
+>       pretrained_model_path=model_path, device=device, dtype=torch_dtype
+> )
+>
+> # 2. Perform inference
+> image = Image.open(image_path)
+> results = model.predict(image, conf=0.4, iou=0.7, half=torch_dtype is torch.float16, return_dict=True)
+>
+> # 3. Print results
+> for result in results:
+>       boxes = result.boxes
+>       print("Found objects:", [(result.names[int(c)], f"{float(conf):.2f}") for c, conf in zip(boxes.cls, boxes.conf)])
+> ```
+> </details>`
+
 
 ### Pretrained Checkpoints
 
@@ -128,7 +244,6 @@ Example of the model's config for 2 tasks: [yolov8x_voc_obj365.yaml](cerberusdet
 | [CerberusDet_v8x](https://drive.google.com/file/d/1vL_xw-EWHy_XojdxR5WPBtsBLSNbycl4/view?usp=sharing)                                                                                   | VOC, Objects365_full                          | 640                   | 0.767, 0.355         | 0.932, 0.464       | 7.2                                | 107                | 390.8                  |
 
 YOLOv8x models were trained with the commit: https://github.com/ultralytics/ultralytics/tree/2bc36d97ce7f0bdc0018a783ba56d3de7f0c0518
-
 
 ### Hyperparameter Evolution
 
@@ -156,15 +271,10 @@ If you use our models, code or dataset, we kindly request you to cite our paper 
 ```bibtex
 
 @article{cerberusdet,
-
    Author = {Irina Tolstykh,Michael Chernyshov,Maksim Kuprashevich},
-
    Title = {CerberusDet: Unified Multi-Dataset Object Detection},
-
    Year = {2024},
-
    Eprint = {arXiv:2407.12632},
-
 }
 
 ```
