@@ -10,7 +10,7 @@
 
 ### CerberusDet: Unified Multi-Dataset Object Detection
 
-[[`Paper`](http://arxiv.org/abs/2407.12632)]
+[[`Paper`](http://arxiv.org/abs/2407.12632)][[🤗 HuggingFace Models](https://huggingface.co/collections/iitolstykh/cerberusdet)]
 
 ---
 
