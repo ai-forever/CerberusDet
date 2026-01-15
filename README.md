@@ -147,7 +147,6 @@ inferencer = CerberusDetInference(
 preprocessor = CerberusPreprocessor(
     img_size=640,
     stride=inferencer.stride,
-    device=device,
     half=inferencer.half,
     auto=True
 )
@@ -160,7 +159,7 @@ images = [cv2.imread(img_path)]
 original_shapes = [img.shape[:2] for img in images]
 
 # 4. Run inference
-img_tensor = preprocessor.preprocess(images)
+img_tensor = preprocessor.preprocess(images, device=inferencer.device)
 detections = inferencer.predict(img_tensor, original_shape=original_shapes)
 
 # Visualization

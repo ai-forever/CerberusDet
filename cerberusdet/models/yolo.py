@@ -104,13 +104,14 @@ class Detect(nn.Module):
         m = self  # self.model[-1]  # Detect() module
         # cf = torch.bincount(torch.tensor(np.concatenate(dataset.labels, 0)[:, 0]).long(), minlength=nc) + 1
         # ncf = math.log(0.6 / (m.nc - 0.999999)) if cf is None else torch.log(cf / cf.sum())  # nominal class frequency
+
         for a, b, s in zip(m.cv2, m.cv3, m.stride):  # from
             a[-1].bias.data[:] = 1.0  # box
             b[-1].bias.data[: m.nc] = math.log(5 / m.nc / (640 / s) ** 2)  # cls (.01 objects, 80 classes, 640 img)
 
 
 class Model(nn.Module):
-    def __init__(self, cfg="yolov8x.yaml", ch=3, nc=None, without_head=False, _=None, verbose=True):
+    def __init__(self, cfg="yolov8x.yaml", ch=3, nc=None, without_head=False, _=None, verbose=True, **kwargs):
         super().__init__()
 
         if isinstance(cfg, dict):
@@ -151,14 +152,17 @@ class Model(nn.Module):
             if isinstance(m, Detect):
                 s = 256  # 2x min stride
                 m.inplace = self.inplace
-                m.stride = torch.tensor([s / x.shape[-2] for x in self.forward(torch.zeros(1, ch, s, s))])  # forward
+                if kwargs.get("stride", None) is None:
+                    m.stride = torch.tensor([s / x.shape[-2] for x in self.forward(torch.zeros(1, ch, s, s))])  # forward
+                else:
+                    m.stride = torch.tensor(kwargs["stride"], dtype=torch.float32)
                 self.stride = m.stride
                 m.bias_init()  # only run once
 
                 # Init weights, biases
                 initialize_weights(self)
 
-        if verbose and LOCAL_RANK in [0, -1]:
+        if verbose and kwargs.get("backbone_verbose", True) and LOCAL_RANK in [0, -1]:
             self.info()
             LOGGER.info("")
 
@@ -263,7 +267,7 @@ def parse_model(yaml_config, ch, without_head=False, verbose=True):  # model_dic
         save.extend(x % i for x in ([f] if isinstance(f, int) else f) if x != -1)  # append to savelist
 
         if verbose and LOCAL_RANK in [0, -1]:
-            logger.info("model build info: ", c2, ch)
+            logger.info(f"model build info: {c2}")
 
     if without_head:
         i = len(layers)

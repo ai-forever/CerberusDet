@@ -140,7 +140,7 @@ class Controller:
 
 
 class CerberusDet(nn.Module):
-    def __init__(self, task_ids, nc, cfg="yolov5s.yaml", ch=3, verbose=True):
+    def __init__(self, task_ids, nc, cfg="yolov5s.yaml", ch=3, verbose=True, **kwargs):
         """
         Base configuration will be:
 
@@ -167,7 +167,7 @@ class CerberusDet(nn.Module):
         self.branching_points = set()
         self.verbose = verbose
 
-        backbone = Model(cfg=cfg, ch=ch, nc=nc, without_head=True, verbose=self.verbose)
+        backbone = Model(cfg=cfg, ch=ch, nc=nc, without_head=True, verbose=self.verbose, **kwargs)
         model = self.add_block(backbone)
 
         self.gd, self.gw = backbone.yaml["depth_multiple"], backbone.yaml["width_multiple"]
@@ -180,7 +180,14 @@ class CerberusDet(nn.Module):
             print("Finish neck parsing")
 
         self.parse_heads(
-            model, deepcopy(backbone.yaml), task_ids, backbone.saved_ch, backbone.inplace, layer_ind_map, deepcopy(nc)
+            model,
+            deepcopy(backbone.yaml),
+            task_ids,
+            backbone.saved_ch,
+            backbone.inplace,
+            layer_ind_map,
+            deepcopy(nc),
+            **kwargs,
         )
         if self.verbose and LOCAL_RANK in [-1, 0]:
             print("Finish heads parsing")
@@ -246,7 +253,7 @@ class CerberusDet(nn.Module):
 
         return prev_model, layer_ind_map
 
-    def parse_heads(self, prev_model, cfg, task_ids, ch, inplace, layer_ind_map, nc):
+    def parse_heads(self, prev_model, cfg, task_ids, ch, inplace, layer_ind_map, nc, **kwargs):
 
         ind = len(cfg["backbone"]) + len(cfg["neck"])
         if len(cfg["head"]) != 1:
@@ -292,9 +299,14 @@ class CerberusDet(nn.Module):
                 if m in [Detect]:
                     s = 256  # 2x min stride
                     m_.inplace = inplace
-                    m_.stride = torch.tensor(
-                        [s / x.shape[-2] for x in self.forward(torch.zeros(1, cfg["ch"], s, s), task_id)]
-                    )  # forward
+                    if kwargs.get("stride", None) is None:
+                        m_.stride = torch.tensor(
+                            [s / x.shape[-2] for x in self.forward(torch.zeros(1, cfg["ch"], s, s), task_id)]
+                        )  # forward
+                    else:
+                        m_.stride = torch.tensor(
+                            kwargs["stride"], dtype=torch.float32
+                        )  # forward
 
                     if not hasattr(self, "stride"):
                         self.stride = m_.stride

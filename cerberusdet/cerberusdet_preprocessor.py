@@ -14,7 +14,6 @@ class CerberusPreprocessor:
         self,
         img_size: int = 640,
         stride: int = 32,
-        device: Union[str, torch.device] = "cpu",
         half: bool = False,
         auto: bool = False,
     ):
@@ -29,9 +28,8 @@ class CerberusPreprocessor:
             auto: If True, creates a minimal rectangle (as in validation).
                   If False (recommended for streams), forces a square size (e.g. 640x640) with gray padding.
         """
-        self.device = select_device(device)
         self.stride = stride
-        self.half = half & (self.device.type != "cpu")
+        self.half = half
         self.auto = auto
 
         # Check if the size is a multiple of the stride. If not, update it.
@@ -41,7 +39,7 @@ class CerberusPreprocessor:
                 f"Warning: --img-size {img_size} must be multiple of max stride {self.stride}, updating to {self.img_size}"
             )
 
-    def preprocess(self, images: List[np.ndarray]) -> torch.Tensor:
+    def preprocess(self, images: List[np.ndarray], device: torch.device) -> torch.Tensor:
         """
         Args:
             images: List of source images in BGR format (H, W, 3).
@@ -67,7 +65,7 @@ class CerberusPreprocessor:
         batched_img = np.stack(processed_images, axis=0)
 
         # 4. To Tensor
-        img_tensor = torch.from_numpy(batched_img).to(self.device)
+        img_tensor = torch.from_numpy(batched_img).to(device)
         img_tensor = img_tensor.half() if self.half else img_tensor.float()
 
         # 5. Normalize 0 - 255 to 0.0 - 1.0
